@@ -68,15 +68,9 @@ def normalize_url(url, query_args=None):
     path = quote(unquoted_path, SAFE_CHARS) or "/"
     # Use `os.path.normpath` to normalize paths i.e. remove duplicate `/` and
     # make the path absolute when `..` or `.` segments are present.
-    # But `normpath` gets rid of trailing slashes if it's not in the beginning
-    # of the path. For example `/abc/` becomes `/abc'. This makes sense in
-    # for a file system but not for URLs. We want the trailing slashes to stay.
     # TODO: Should we remove duplicate slashes?
     # TODO: See https://webmasters.stackexchange.com/questions/8354/what-does-the-double-slash-mean-in-urls/8381#8381
-    has_trailing_slash = (path[-1] == "/")
     path = normpath(path)
-    if has_trailing_slash and path[-1] != "/":
-        path += "/"
     # POSIX allows one or two initial slashes, but treats three or more
     # as single slash.So if there are two initial slashes, make them one.
     if path.startswith("//"):

@@ -39,7 +39,7 @@ def test_unreserved_percentencoding():
     """Unreserved characters should not be percent encoded. If they are, they
     should be decoded back; except in case of `/`, `?` and `#`"""
     assert (normalize_url("http://www.example.com/%7Eusername/") ==
-            "http://www.example.com/~username/")
+            "http://www.example.com/~username")
     assert (normalize_url('http://example.com/foo%23bar') ==
             'http://example.com/foo%23bar')
     assert (normalize_url('http://example.com/foo%2fbar') ==
@@ -58,7 +58,7 @@ def test_remove_default_port():
     assert (normalize_url("http://www.example.com:80/bar.html") ==
             "http://www.example.com/bar.html")
     assert (normalize_url("HTTPS://example.com:443/abc/") ==
-            "https://example.com/abc/")
+            "https://example.com/abc")
 
 def test_remove_empty_port():
     """Remove empty port from URL"""
@@ -83,12 +83,12 @@ def test_query_string():
     assert (normalize_url("http://example.com/a?b=1") ==
             "http://example.com/a?b=1")
     assert (normalize_url("http://example.com/a/?b=1") ==
-            "http://example.com/a/?b=1")
+            "http://example.com/a?b=1")
 
 def test_dont_percent_encode_safe_chars_query():
     """Don't percent-encode safe characters in querystring"""
     assert (normalize_url("http://example.com/a/?face=(-.-)") ==
-            "http://example.com/a/?face=(-.-)")
+            "http://example.com/a?face=(-.-)")
 
 def test_query_sorting():
     """Query strings should be sorted"""
@@ -111,7 +111,7 @@ def test_drop_trailing_questionmark():
     assert normalize_url("http://example.com/?") == "http://example.com/"
     assert normalize_url("http://example.com?") == "http://example.com/"
     assert normalize_url("http://example.com/a?") == "http://example.com/a"
-    assert normalize_url("http://example.com/a/?") == "http://example.com/a/"
+    assert normalize_url("http://example.com/a/?") == "http://example.com/a"
 
 def test_percent_encode_querystring():
     """Non-safe characters in query string should be percent-encoded"""
