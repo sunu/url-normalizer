@@ -25,6 +25,11 @@ def test_capitalize_escape_sequence():
     assert (normalize_url("http://www.example.com/a%c2%b1b") ==
             "http://www.example.com/a%C2%B1b")
 
+def test_path_percent_encoding():
+    """All non-safe characters should be percent-encoded"""
+    assert (normalize_url("http://example.com/hello world{}") ==
+            "http://example.com/hello%20world%7B%7D")
+
 def test_unreserved_percentencoding():
     """Unreserved characters should not be percent encoded. If they are, they
     should be decoded back"""
@@ -57,3 +62,46 @@ def test_remove_extra_slash():
             "http://www.example.com/foo/bar.html")
     assert(normalize_url("http://example.com///abc") ==
            "http://example.com/abc")
+
+def test_query_string():
+    """Query strings should be handled properly"""
+    assert (normalize_url("http://example.com/?a=1") ==
+            "http://example.com/?a=1")
+    assert (normalize_url("http://example.com?a=1") ==
+            "http://example.com/?a=1")
+    assert (normalize_url("http://example.com/a?b=1") ==
+            "http://example.com/a?b=1")
+    assert (normalize_url("http://example.com/a/?b=1") ==
+            "http://example.com/a/?b=1")
+
+def test_query_sorting():
+    """Query strings should be sorted"""
+    assert (normalize_url('http://example.com/a?b=1&c=2') ==
+            'http://example.com/a?b=1&c=2')
+    assert (normalize_url('http://example.com/a?c=2&b=1') ==
+            'http://example.com/a?b=1&c=2')
+
+def test_query_string_spaces():
+    """Spaces should be handled properly in query strings"""
+    assert (normalize_url("http://example.com/search?q=a b&a=1") ==
+            "http://example.com/search?a=1&q=a+b")
+    assert (normalize_url("http://example.com/search?q=a+b&a=1") ==
+            "http://example.com/search?a=1&q=a+b")
+    assert (normalize_url("http://example.com/search?q=a%20b&a=1") ==
+            "http://example.com/search?a=1&q=a+b")
+
+def test_drop_trailing_questionmark():
+    """Drop the trailing question mark if no query string present"""
+    assert normalize_url("http://example.com/?") == "http://example.com/"
+    assert normalize_url("http://example.com?") == "http://example.com/"
+    assert normalize_url("http://example.com/a?") == "http://example.com/a"
+    assert normalize_url("http://example.com/a/?") == "http://example.com/a/"
+
+def test_percent_encode_querystring():
+    """Non-safe characters in query string should be percent-encoded"""
+    assert (normalize_url("http://example.com/?a=hello{}") ==
+            "http://example.com/?a=hello%7B%7D")
+def test_normalize_percent_encoding_in_querystring():
+    """Percent-encoded querystring should be uppercased"""
+    assert (normalize_url("http://example.com/?a=b%c2") ==
+            "http://example.com/?a=b%C2")
