@@ -1,7 +1,7 @@
 """Tests for URL normalization"""
 import pytest
 
-from normalizer import normalize_url
+from ..normalizer import normalize_url
 
 
 def test_normalized_urls():
@@ -21,7 +21,7 @@ def test_lower_case():
     assert normalize_url("HTTP://examPle.cOm/") == "http://example.com/"
 
 def test_capitalize_escape_sequence():
-    """All letters in percent encoded triplets should be capitalized"""
+    """All letters in percent-encoded triplets should be capitalized"""
     assert (normalize_url("http://www.example.com/a%c2%b1b") ==
             "http://www.example.com/a%C2%B1b")
 
@@ -74,6 +74,11 @@ def test_query_string():
     assert (normalize_url("http://example.com/a/?b=1") ==
             "http://example.com/a/?b=1")
 
+def test_dont_percent_encode_safe_chars_query():
+    """Don't percent-encode safe characters in querystring"""
+    assert (normalize_url("http://example.com/a/?face=(-.-)") ==
+            "http://example.com/a/?face=(-.-)")
+
 def test_query_sorting():
     """Query strings should be sorted"""
     assert (normalize_url('http://example.com/a?b=1&c=2') ==
@@ -101,7 +106,20 @@ def test_percent_encode_querystring():
     """Non-safe characters in query string should be percent-encoded"""
     assert (normalize_url("http://example.com/?a=hello{}") ==
             "http://example.com/?a=hello%7B%7D")
+
 def test_normalize_percent_encoding_in_querystring():
     """Percent-encoded querystring should be uppercased"""
     assert (normalize_url("http://example.com/?a=b%c2") ==
             "http://example.com/?a=b%C2")
+
+def test_unicode_query_string():
+    """Unicode query strings should be converted to bytes using uft-8 encoding
+    and then properly percent-encoded"""
+    assert (normalize_url("http://example.com/?file=résumé.pdf") ==
+            "http://example.com/?file=r%C3%A9sum%C3%A9.pdf")
+
+def test_unicode_path():
+    """Unicode path should be converted to bytes using utf-8 encoding and then
+    percent-encoded"""
+    assert (normalize_url("http://example.com/résumé") ==
+            "http://example.com/r%C3%A9sum%C3%A9")

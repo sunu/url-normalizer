@@ -1,9 +1,9 @@
 """This module contains functions to help normalize URLs"""
 from os.path import normpath
 import string
-from urllib.parse import (
-    urlparse, urlunparse, unquote, quote, urlencode, parse_qsl
-)
+from urllib.parse import urlparse, urlunparse, unquote, quote, urlencode
+
+from .utils import _parse_qsl
 
 # Reserved delimeters from https://tools.ietf.org/html/rfc3986#section-2.2
 GEN_DELIMS = ":/?#[]@"
@@ -66,7 +66,7 @@ def normalize_url(url, query_args=None):
         netloc = netloc.rstrip(":"+str(parts.port))
 
     # Percent-encode and sort query arguments.
-    queries_list = parse_qsl(query)
+    queries_list = _parse_qsl(query)
     queries_list.sort()
     query = urlencode(queries_list, safe=SAFE_CHARS)
 
