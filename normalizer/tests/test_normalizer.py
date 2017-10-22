@@ -19,6 +19,11 @@ def test_append_slash():
 def test_lower_case():
     """Normalized URL scheme and host are lower case"""
     assert normalize_url("HTTP://examPle.cOm/") == "http://example.com/"
+    assert normalize_url("http://example.com/A") == "http://example.com/A"
+
+def test_strip_trailing_period():
+    assert normalize_url("http://example.com.") == "http://example.com/"
+    assert normalize_url("http://example.com./") == "http://example.com/"
 
 def test_capitalize_escape_sequence():
     """All letters in percent-encoded triplets should be capitalized"""
@@ -32,9 +37,15 @@ def test_path_percent_encoding():
 
 def test_unreserved_percentencoding():
     """Unreserved characters should not be percent encoded. If they are, they
-    should be decoded back"""
+    should be decoded back; except in case of `/`, `?` and `#`"""
     assert (normalize_url("http://www.example.com/%7Eusername/") ==
             "http://www.example.com/~username/")
+    assert (normalize_url('http://example.com/foo%23bar') ==
+            'http://example.com/foo%23bar')
+    assert (normalize_url('http://example.com/foo%2fbar') ==
+            'http://example.com/foo%2Fbar')
+    assert (normalize_url('http://example.com/foo%3fbar') ==
+            'http://example.com/foo%3Fbar')
 
 def test_remove_dot_segments():
     """Convert the URL path to an absolute path by removing `.` and `..`
@@ -130,3 +141,40 @@ def test_idna():
             "http://xn--eckwd4c7c.xn--zckzah/")
     assert (normalize_url("http://Яндекс.рф") ==
             "http://xn--d1acpjx3f.xn--p1ai/")
+
+def test_dont_change_username_password():
+    """Username and password shouldn't be lowercased"""
+    assert (normalize_url("http://Foo:BAR@exaMPLE.COM/") ==
+            "http://Foo:BAR@example.com/")
+
+def test_normalize_ipv4():
+    """Normalize ipv4 URLs"""
+    assert normalize_url("http://192.168.0.1/") == "http://192.168.0.1/"
+    assert (normalize_url("http://192.168.0.1:8080/a?b=1") ==
+            "http://192.168.0.1:8080/a?b=1")
+    assert normalize_url("192.168.0.1") == "http://192.168.0.1/"
+    assert (normalize_url("192.168.0.1:8080/a/b/c") ==
+            "http://192.168.0.1:8080/a/b/c")
+
+def test_normalize_ipv6():
+    """Normalize ipv6 URLs"""
+    assert normalize_url("[::1]") == "http://[::1]/"
+    assert normalize_url("http://[::1]") == "http://[::1]/"
+    assert normalize_url("[::1]:8080") == "http://[::1]:8080/"
+    assert normalize_url("http://[::1]:8080") == "http://[::1]:8080/"
+
+def test_empty_string():
+    """If given url is an empty string, return empty string"""
+    assert normalize_url("") == ""
+
+def test_strip_leading_trailing_whitespace():
+    """Strip leading and trailing whitespace if any"""
+    assert normalize_url("   http://example.com  ") == "http://example.com/"
+    assert normalize_url("http://example.com/a  ") == "http://example.com/a"
+    assert normalize_url("   http://example.com/") == "http://example.com/"
+
+def test_non_ideal_inputs():
+    """Not the ideal input; but we should handle it anyway"""
+    assert normalize_url("example.com") == "http://example.com/"
+    assert normalize_url("example.com/abc") == "http://example.com/abc"
+    assert normalize_url("//example.com/abc") == "http://example.com/abc"
