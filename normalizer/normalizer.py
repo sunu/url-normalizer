@@ -59,6 +59,8 @@ def normalize_url(url, query_args=None):
     if has_trailing_slash and path[-1] != "/":
         path += "/"
 
+    # Handle international domain names
+    netloc = netloc.encode("idna").decode("utf-8")
     # normalize to lowercase and strip empty port if any
     netloc = netloc.lower().rstrip(":")
     # strip default port

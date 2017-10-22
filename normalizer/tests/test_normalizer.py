@@ -123,3 +123,10 @@ def test_unicode_path():
     percent-encoded"""
     assert (normalize_url("http://example.com/résumé") ==
             "http://example.com/r%C3%A9sum%C3%A9")
+
+def test_idna():
+    """International Domain Names should be normalized to safe characters"""
+    assert (normalize_url("http://ドメイン.テスト") ==
+            "http://xn--eckwd4c7c.xn--zckzah/")
+    assert (normalize_url("http://Яндекс.рф") ==
+            "http://xn--d1acpjx3f.xn--p1ai/")
