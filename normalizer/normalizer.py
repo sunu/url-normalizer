@@ -23,14 +23,14 @@ DEFAULT_PORTS = {
 
 SCHEMES = ("http", "https")
 
-def normalize_url(url, query_args=None):
+def normalize_url(url, extra_query_args=None):
     """Normalize a url to its canonical form.
 
     Parameters
     ----------
     url: str
         URL to be normalize
-    query_args: list of 2-element str tuples, optional
+    extra_query_args: list of 2-element str tuples, optional
         A list of tuples with further query arguments that need to be appended
         to the URL
 
@@ -57,6 +57,18 @@ def normalize_url(url, query_args=None):
         parts.fragment, parts.username, parts.password, parts.port
     )
 
+    # normalize parts
+    path = _normalize_path(path)
+    netloc = _normalize_netloc(scheme, netloc, username, password, port)
+    query = _normalize_query(query, extra_query_args)
+
+    # Put the url back together
+    url = urlunsplit((scheme, netloc, path, query, fragment))
+    return url
+
+__all__ = ["normalize_url"]
+
+def _normalize_path(path):
     # If there are any `/` or `?` or `#` in the path encoded as `%2f` or `%3f`
     # or `%23` respectively, we don't want them unquoted. So escape them
     # before unquoting
@@ -75,7 +87,9 @@ def normalize_url(url, query_args=None):
     # as single slash.So if there are two initial slashes, make them one.
     if path.startswith("//"):
         path = "/" + path.lstrip("/")
+    return path
 
+def _normalize_netloc(scheme, netloc, username, password, port):
     # Leave auth info out before fiddling with netloc
     auth = None
     if username:
@@ -93,22 +107,18 @@ def normalize_url(url, query_args=None):
     # Put auth info back in
     if auth:
         netloc = auth + "@" + netloc
+    return netloc
 
-
+def _normalize_query(query, extra_query_args):
     # Percent-encode and sort query arguments.
     queries_list = _parse_qsl(query)
     # Add the additional query args if any
-    if query_args:
-        query_args = [
+    if extra_query_args:
+        extra_query_args = [
             (name.encode("utf-8"), val.encode("utf-8"))
-            for (name, val) in query_args
+            for (name, val) in extra_query_args
         ]
-        queries_list.extend(query_args)
+        queries_list.extend(extra_query_args)
     queries_list.sort()
     query = urlencode(queries_list, safe=SAFE_CHARS)
-
-    # Put the url back together
-    url = urlunsplit((scheme, netloc, path, query, fragment))
-    return url
-
-__all__ = ["normalize_url"]
+    return query
