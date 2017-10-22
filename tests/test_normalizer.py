@@ -10,7 +10,7 @@ def test_normalized_urls():
 
 def test_return_type():
     """Should return string"""
-    assert isinstance(normalize_url("http://eample.com/"), str)
+    assert isinstance(normalize_url("http://example.com/"), str)
 
 def test_append_slash():
     """Append a slash to the end of the URL if it's missing one"""
@@ -41,14 +41,19 @@ def test_remove_default_port():
     """Remove the default port for the scheme if it's present in the URL"""
     assert (normalize_url("http://www.example.com:80/bar.html") ==
             "http://www.example.com/bar.html")
+    assert (normalize_url("HTTPS://example.com:443/abc/") ==
+            "https://example.com/abc/")
 
 def test_remove_empty_port():
     """Remove empty port from URL"""
-    assert (normalize_url("http://www.examle.com:/") ==
+    assert (normalize_url("http://www.example.com:/") ==
             "http://www.example.com/")
-
 
 def test_remove_extra_slash():
     """Remove any extra slashes if present in the URl"""
+    # TODO: Should we actually do this?
+    # TODO: See https://webmasters.stackexchange.com/questions/8354/what-does-the-double-slash-mean-in-urls/8381#8381
     assert (normalize_url("http://www.example.com/foo//bar.html") ==
             "http://www.example.com/foo/bar.html")
+    assert(normalize_url("http://example.com///abc") ==
+           "http://example.com/abc")
