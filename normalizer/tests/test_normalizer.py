@@ -178,3 +178,12 @@ def test_non_ideal_inputs():
     assert normalize_url("example.com") == "http://example.com/"
     assert normalize_url("example.com/abc") == "http://example.com/abc"
     assert normalize_url("//example.com/abc") == "http://example.com/abc"
+
+def test_additional_query_args():
+    """Add any additional query arguments to the URL"""
+    assert (normalize_url("http://example.com?c=d", [("a", "b")]) ==
+            "http://example.com/?a=b&c=d")
+    assert (normalize_url("http://example.com", [("a", "b")]) ==
+            "http://example.com/?a=b")
+    assert (normalize_url("http://example.com", [("résumé", "résumé")]) ==
+            "http://example.com/?r%C3%A9sum%C3%A9=r%C3%A9sum%C3%A9")

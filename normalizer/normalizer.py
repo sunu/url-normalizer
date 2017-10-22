@@ -30,7 +30,7 @@ def normalize_url(url, query_args=None):
     ----------
     url: str
         URL to be normalize
-    query_args: list of 2-element tuples, optional
+    query_args: list of 2-element str tuples, optional
         A list of tuples with further query arguments that need to be appended
         to the URL
 
@@ -97,6 +97,13 @@ def normalize_url(url, query_args=None):
 
     # Percent-encode and sort query arguments.
     queries_list = _parse_qsl(query)
+    # Add the additional query args if any
+    if query_args:
+        query_args = [
+            (name.encode("utf-8"), val.encode("utf-8"))
+            for (name, val) in query_args
+        ]
+        queries_list.extend(query_args)
     queries_list.sort()
     query = urlencode(queries_list, safe=SAFE_CHARS)
 
