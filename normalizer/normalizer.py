@@ -1,7 +1,7 @@
 """This module contains functions to help normalize URLs"""
 from os.path import normpath
 import string
-from urllib.parse import urlparse, urlunparse, unquote, quote, urlencode
+from urllib.parse import urlunsplit, unquote, quote, urlencode, urlsplit
 
 from .utils import _parse_qsl
 
@@ -21,6 +21,8 @@ DEFAULT_PORTS = {
     "https": 443
 }
 
+SCHEMES = ("http", "https")
+
 def normalize_url(url, query_args=None):
     """Normalize a url to its canonical form.
 
@@ -37,12 +39,29 @@ def normalize_url(url, query_args=None):
     str
         A normalized url with supplied extra query arguments
     """
-    parts = urlparse(url)
-    scheme, netloc, path, params, query, fragment = (
-        parts.scheme, parts.netloc, parts.path, parts.params, parts.query,
-        parts.fragment
+    if url is "":
+        return ""
+    url = url.strip()
+    if not url.lower().startswith(SCHEMES):
+        # If there is no scheme, it may be an ip address. Prepend `//` so that
+        # oes the right thing and fall back to http.
+        # See https://bugs.python.org/issue754016
+        # TODO: May be it's not a valid URL?
+        if not url.startswith("//"):
+            url = "//" + url
+        parts = urlsplit(url, scheme="http")
+    else:
+        parts = urlsplit(url)
+    scheme, netloc, path, query, fragment, username, password, port = (
+        parts.scheme, parts.netloc, parts.path, parts.query,
+        parts.fragment, parts.username, parts.password, parts.port
     )
 
+    # If there are any `/` or `?` or `#` in the path encoded as `%2f` or `%3f`
+    # or `%23` respectively, we don't want them unquoted. So escape them
+    # before unquoting
+    for reserved in ('2f', '2F', '3f', '3F', '23'):
+        path = path.replace('%' + reserved, '%25' + reserved.upper())
     # unquote and quote the path so that any non-safe character is
     # percent-encoded and already percent-encoded triplets are upper cased.
     unquoted_path = unquote(path)
@@ -58,14 +77,29 @@ def normalize_url(url, query_args=None):
     path = normpath(path)
     if has_trailing_slash and path[-1] != "/":
         path += "/"
+    # POSIX allows one or two initial slashes, but treats three or more
+    # as single slash.So if there are two initial slashes, make them one.
+    if path.startswith("//"):
+        path = "/" + path.lstrip("/")
 
+    # Leave auth info out before fiddling with netloc
+    auth = None
+    if username:
+        auth = username
+        if password:
+            auth += ":" + password
+        netloc = netloc.split(auth)[1][1:]
     # Handle international domain names
     netloc = netloc.encode("idna").decode("utf-8")
-    # normalize to lowercase and strip empty port if any
-    netloc = netloc.lower().rstrip(":")
+    # normalize to lowercase and strip empty port or trailing period if any
+    netloc = netloc.lower().rstrip(":").rstrip(".")
     # strip default port
-    if parts.port and DEFAULT_PORTS.get(scheme) == parts.port:
-        netloc = netloc.rstrip(":"+str(parts.port))
+    if port and DEFAULT_PORTS.get(scheme) == port:
+        netloc = netloc.rstrip(":"+str(port))
+    # Put auth info back in
+    if auth:
+        netloc = auth + "@" + netloc
+
 
     # Percent-encode and sort query arguments.
     queries_list = _parse_qsl(query)
@@ -73,7 +107,7 @@ def normalize_url(url, query_args=None):
     query = urlencode(queries_list, safe=SAFE_CHARS)
 
     # Put the url back together
-    url = urlunparse((scheme, netloc, path, params, query, fragment))
+    url = urlunsplit((scheme, netloc, path, query, fragment))
     return url
 
 __all__ = ["normalize_url"]
