@@ -3,6 +3,7 @@ import pytest
 
 from ..normalizer import normalize_url
 
+# TODO: parametrize test cases
 
 def test_normalized_urls():
     """Already normalized URLs should not change"""
