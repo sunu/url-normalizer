@@ -33,6 +33,8 @@ def normalize_url(url, extra_query_args=None, drop_fragments=True):
     extra_query_args: list of 2-element str tuples, optional
         A list of tuples with further query arguments that need to be appended
         to the URL
+    drop_fragments: boolean
+        Keep or drop url fragments
 
     Returns
     -------
