@@ -1,6 +1,8 @@
 URL-NORMALIZER
 ==============
 
+[![Build Status](https://travis-ci.org/sunu/url-normalizer.svg?branch=master)](https://travis-ci.org/sunu/url-normalizer)
+
 Normalizes URL by doing the following:
 
 - Lower casing the hostname and scheme
