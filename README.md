@@ -19,6 +19,8 @@ Normalizes URL by doing the following:
 - Dropping trailing `?` in case of empty query string
 - Stripping redundant `/` in the path
 
+Works with `http` and `https` urls only for now.
+
 # Python version
 
 For now, Python 3 only.
