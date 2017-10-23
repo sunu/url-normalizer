@@ -41,8 +41,8 @@ def normalize_url(url, extra_query_args=None, drop_fragments=True):
     None
         If the passed string doesn't look like a URL, return None
     """
-    if url is "":
-        return ""
+    if not isinstance(url, str):
+        return None
     url = url.strip()
     if not url.lower().startswith(SCHEMES):
         if url.startswith("//"):
@@ -51,7 +51,7 @@ def normalize_url(url, extra_query_args=None, drop_fragments=True):
             url = "http://" + url
     if not _is_valid_url(url):
         # Doesn't look like a valid URL
-        return
+        return None
     parts = urlsplit(url)
 
     scheme, netloc, path, query, fragment, username, password, port = (

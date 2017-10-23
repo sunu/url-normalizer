@@ -163,10 +163,6 @@ def test_normalize_ipv6():
     assert normalize_url("[::1]:8080") == "http://[::1]:8080/"
     assert normalize_url("http://[::1]:8080") == "http://[::1]:8080/"
 
-def test_empty_string():
-    """If given url is an empty string, return empty string"""
-    assert normalize_url("") == ""
-
 def test_strip_leading_trailing_whitespace():
     """Strip leading and trailing whitespace if any"""
     assert normalize_url("   http://example.com  ") == "http://example.com/"
@@ -190,6 +186,7 @@ def test_additional_query_args():
 
 def test_non_urls():
     """If a non-URL string is passed, return None"""
+    assert normalize_url("") is None
     assert normalize_url("abc xyz") is None
     assert normalize_url("asb#abc") is None
     assert normalize_url("Яндекс.рф") is not None
@@ -203,3 +200,9 @@ def test_drop_fragments():
             == "http://example.com/a?b=1")
     assert (normalize_url("http://example.com/a?b=1#frag", drop_fragments=False)
             == "http://example.com/a?b=1#frag")
+
+def test_non_string_input():
+    """Non-string input should produce None as result"""
+    assert normalize_url(None) is None
+    assert normalize_url([]) is None
+    assert normalize_url(123) is None
