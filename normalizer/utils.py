@@ -67,9 +67,11 @@ def _is_valid_url(value):
     host_re = '(' + hostname_re + domain_re + tld_re + '|localhost)'
 
     pattern = re.compile(
+        r'^(?:[a-z0-9\.\-\+]*)://'  # scheme is validated separately
         r'(?:\S+(?::\S*)?@)?'  # user:pass authentication
         r'(?:' + ipv4_re + '|' + ipv6_re + '|' + host_re + ')'
-        r'(?::\d{2,5})?'  # port
-        r'(?:[/?#][^\s]*)?'  # resource path
+        r'(?::?(?:\d{2,5})?)?'  # port
+        u"(?:/.*)?" # resource path
+        u"(?:\?.*)?" # query string
         r'\Z', re.IGNORECASE)
     return bool(pattern.match(value))
