@@ -104,7 +104,7 @@ def _normalize_netloc(scheme, netloc, username, password, port):
             auth += ":" + password
         netloc = netloc.split(auth)[1][1:]
     # Handle international domain names
-    netloc = netloc.encode("idna").decode("utf-8")
+    netloc = netloc.encode("idna").decode("ascii")
     # normalize to lowercase and strip empty port or trailing period if any
     netloc = netloc.lower().rstrip(":").rstrip(".")
     # strip default port
