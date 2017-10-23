@@ -17,6 +17,10 @@ Normalizes URL by doing the following:
 - Dropping trailing `?` in case of empty query string
 - Stripping redundant `/` in the path
 
+# Python version
+
+For now, Python 3 only.
+
 # Installation
 
 Install using `pip`
@@ -28,7 +32,7 @@ or clone and install using `python setup.py install`
 
 # Usage
 
-Pass a url to the `normalize_url` function as a `str` type to normalize it.
+Pass a url to the `normalize_url` function as a `str` type to normalize it. 
 
 ```pycon
 In [1]: from normalizer import normalize_url
@@ -42,6 +46,9 @@ Out[3]: 'http://example.com/'
 In [4]: normalize_url("http://example.com/?b=2&a=1")
 Out[4]: 'http://example.com/?a=1&b=2'
 ```
+
+`normalize_url` has 2 optional arguments; `extra_query_args` (defaults to `None`) and `drop_fragments`
+(defaults to `True`).
 
 You can add extra query arguments to the url by passing in a list of tuples containing
 the key and value as `str`
