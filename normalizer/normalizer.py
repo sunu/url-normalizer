@@ -3,7 +3,7 @@ from os.path import normpath
 import string
 from urllib.parse import urlunsplit, unquote, quote, urlencode, urlsplit
 
-from .utils import _parse_qsl
+from .utils import _parse_qsl, _is_valid_url
 
 # Reserved delimeters from https://tools.ietf.org/html/rfc3986#section-2.2
 GEN_DELIMS = ":/?#[]@"
@@ -38,20 +38,26 @@ def normalize_url(url, extra_query_args=None):
     -------
     str
         A normalized url with supplied extra query arguments
+    None
+        If the passed string doesn't look like a URL, return None
     """
     if url is "":
         return ""
     url = url.strip()
     if not url.lower().startswith(SCHEMES):
-        # If there is no scheme, it may be an ip address. Prepend `//` so that
-        # oes the right thing and fall back to http.
-        # See https://bugs.python.org/issue754016
-        # TODO: May be it's not a valid URL?
-        if not url.startswith("//"):
-            url = "//" + url
-        parts = urlsplit(url, scheme="http")
+        if _is_valid_url(url):
+            # If there is no scheme, it may be an ip address. Prepend `//` so that
+            # `urlsplit` does the right thing and fall back to http.
+            # See https://bugs.python.org/issue754016s
+            if not url.startswith("//"):
+                url = "//" + url
+            parts = urlsplit(url, scheme="http")
+        else:
+            # Doesn't look like valid URL; return None
+            return
     else:
         parts = urlsplit(url)
+
     scheme, netloc, path, query, fragment, username, password, port = (
         parts.scheme, parts.netloc, parts.path, parts.query,
         parts.fragment, parts.username, parts.password, parts.port

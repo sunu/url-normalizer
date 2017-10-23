@@ -187,3 +187,10 @@ def test_additional_query_args():
             "http://example.com/?a=b")
     assert (normalize_url("http://example.com", [("résumé", "résumé")]) ==
             "http://example.com/?r%C3%A9sum%C3%A9=r%C3%A9sum%C3%A9")
+
+def test_non_urls():
+    """If a non-URL string is passed, return None"""
+    assert normalize_url("abc xyz") is None
+    assert normalize_url("asb#abc") is None
+    assert normalize_url("Яндекс.рф") is not None
+    assert normalize_url("google.blog") is not None
