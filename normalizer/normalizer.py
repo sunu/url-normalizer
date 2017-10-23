@@ -23,7 +23,7 @@ DEFAULT_PORTS = {
 
 SCHEMES = ("http", "https")
 
-def normalize_url(url, extra_query_args=None):
+def normalize_url(url, extra_query_args=None, drop_fragments=True):
     """Normalize a url to its canonical form.
 
     Parameters
@@ -67,6 +67,9 @@ def normalize_url(url, extra_query_args=None):
     path = _normalize_path(path)
     netloc = _normalize_netloc(scheme, netloc, username, password, port)
     query = _normalize_query(query, extra_query_args)
+
+    if drop_fragments:
+        fragment = ""
 
     # Put the url back together
     url = urlunsplit((scheme, netloc, path, query, fragment))

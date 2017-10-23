@@ -194,3 +194,10 @@ def test_non_urls():
     assert normalize_url("asb#abc") is None
     assert normalize_url("Яндекс.рф") is not None
     assert normalize_url("google.blog") is not None
+
+def test_drop_fragments():
+    """Drop or keep fragments based on the option passed"""
+    assert (normalize_url("http://example.com/a?b=1#frag")
+            == "http://example.com/a?b=1")
+    assert (normalize_url("http://example.com/a?b=1#frag", drop_fragments=False)
+            == "http://example.com/a?b=1#frag")
